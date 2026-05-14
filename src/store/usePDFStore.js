@@ -1,0 +1,86 @@
+import { create } from 'zustand'
+
+const getInitialTheme = () => {
+  try { return localStorage.getItem('pdfcompare-theme') || 'dark' } catch { return 'dark' }
+}
+
+const usePDFStore = create((set, get) => ({
+  // --- Loaded PDFs ---
+  oldPDF: null,  // { file, doc, pageCount, metadata }
+  newPDF: null,
+
+  // --- Navigation ---
+  currentPage: 1,
+
+  // --- View mode ---
+  mode: 'overlay',  // 'overlay' | 'sidebyside' | 'swipe'
+
+  // --- Zoom / pan ---
+  zoom: 1.0,
+  panX: 0,
+  panY: 0,
+
+  // --- Overlay layer settings ---
+  oldColor: '#ff0000',
+  newColor: '#00aaff',
+  oldOpacity: 0.5,
+  newOpacity: 0.5,
+  blendMode: 'difference',
+  showOld: true,
+  showNew: true,
+
+  // --- Manual alignment ---
+  alignOffsetX: 0,
+  alignOffsetY: 0,
+  alignRotation: 0.0,
+
+  // --- UI state ---
+  theme: getInitialTheme(),
+  sidebarOpen: true,
+  syncScroll: true,
+
+  // --- Password prompts ---
+  pendingPasswordPDF: null,  // 'old' | 'new' | null
+
+  // --- Actions ---
+  setOldPDF: (pdf) => set({ oldPDF: pdf, currentPage: 1, panX: 0, panY: 0 }),
+  setNewPDF: (pdf) => set({ newPDF: pdf, currentPage: 1, panX: 0, panY: 0 }),
+  clearOldPDF: () => set({ oldPDF: null }),
+  clearNewPDF: () => set({ newPDF: null }),
+
+  setCurrentPage: (page) => {
+    const { oldPDF, newPDF } = get()
+    const maxPage = Math.max(oldPDF?.pageCount ?? 1, newPDF?.pageCount ?? 1)
+    set({ currentPage: Math.max(1, Math.min(page, maxPage)) })
+  },
+
+  setMode: (mode) => set({ mode }),
+  setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(8.0, zoom)) }),
+  setPan: (panX, panY) => set({ panX, panY }),
+  resetView: () => set({ zoom: 1.0, panX: 0, panY: 0 }),
+
+  setOldColor: (c) => set({ oldColor: c }),
+  setNewColor: (c) => set({ newColor: c }),
+  setOldOpacity: (v) => set({ oldOpacity: v }),
+  setNewOpacity: (v) => set({ newOpacity: v }),
+  setBlendMode: (m) => set({ blendMode: m }),
+  toggleOld: () => set((s) => ({ showOld: !s.showOld })),
+  toggleNew: () => set((s) => ({ showNew: !s.showNew })),
+
+  setAlignOffsetX: (v) => set({ alignOffsetX: v }),
+  setAlignOffsetY: (v) => set({ alignOffsetY: v }),
+  setAlignRotation: (v) => set({ alignRotation: v }),
+  resetAlignment: () => set({ alignOffsetX: 0, alignOffsetY: 0, alignRotation: 0 }),
+
+  setTheme: (theme) => {
+    try { localStorage.setItem('pdfcompare-theme', theme) } catch {}
+    if (theme === 'dark') document.documentElement.classList.add('dark')
+    else document.documentElement.classList.remove('dark')
+    set({ theme })
+  },
+  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSyncScroll: (v) => set({ syncScroll: v }),
+  setPendingPasswordPDF: (which) => set({ pendingPasswordPDF: which }),
+}))
+
+export default usePDFStore

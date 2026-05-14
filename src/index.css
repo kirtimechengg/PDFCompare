@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #888; }
+
+/* Canvas cursor states */
+.canvas-grab { cursor: grab; }
+.canvas-grabbing { cursor: grabbing; }
+
+@media print {
+  header, aside, footer, .absolute { display: none !important; }
+  canvas { max-width: 100%; page-break-inside: avoid; }
+}
