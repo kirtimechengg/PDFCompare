@@ -47,6 +47,7 @@ const usePDFStore = create((set, get) => ({
   setNewPDF: (pdf) => set({ newPDF: pdf, currentPage: 1, panX: 0, panY: 0 }),
   clearOldPDF: () => set({ oldPDF: null }),
   clearNewPDF: () => set({ newPDF: null }),
+  swapPDFs: () => set((s) => ({ oldPDF: s.newPDF, newPDF: s.oldPDF })),
 
   setCurrentPage: (page) => {
     const { oldPDF, newPDF } = get()

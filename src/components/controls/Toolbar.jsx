@@ -11,7 +11,7 @@ const MODES = [
 ]
 
 export default function Toolbar({ canvasRef }) {
-  const { mode, setMode, sidebarOpen, toggleSidebar, oldPDF, newPDF, clearOldPDF, clearNewPDF } = usePDFStore()
+  const { mode, setMode, sidebarOpen, toggleSidebar, oldPDF, newPDF, clearOldPDF, clearNewPDF, swapPDFs } = usePDFStore()
 
   return (
     <header className="flex items-center gap-3 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#242424] flex-shrink-0 flex-wrap">
@@ -29,7 +29,14 @@ export default function Toolbar({ canvasRef }) {
         <span className="text-red-400 truncate max-w-24" title={oldPDF?.metadata?.name}>
           {oldPDF?.metadata?.name ?? '—'}
         </span>
-        <span className="text-gray-500">vs</span>
+        <button
+          onClick={swapPDFs}
+          disabled={!oldPDF || !newPDF}
+          className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed px-0.5 transition"
+          title="Swap old ↔ new"
+        >
+          ⇄
+        </button>
         <span className="text-blue-400 truncate max-w-24" title={newPDF?.metadata?.name}>
           {newPDF?.metadata?.name ?? '—'}
         </span>
