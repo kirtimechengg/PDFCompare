@@ -2,13 +2,16 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import usePDFStore from '../../../store/usePDFStore'
 import PDFCanvas from '../shared/PDFCanvas'
 import { useZoomPan } from '../../../hooks/useZoomPan'
+import DrawingCanvas from '../../drawing/DrawingCanvas'
 
 export default function SideBySideView() {
-  const { oldPDF, newPDF, currentPage, zoom, panX, panY } = usePDFStore()
+  const { oldPDF, newPDF, currentPage, zoom, panX, panY, drawingTool } = usePDFStore()
   const [splitPct, setSplitPct] = useState(50)
   const containerRef = useRef(null)
+  const oldCanvasRef = useRef(null)
+  const newCanvasRef = useRef(null)
   const draggingDivider = useRef(false)
-  const { onMouseDown, onMouseMove, onMouseUp } = useZoomPan(containerRef)
+  const { onMouseDown, onMouseMove, onMouseUp } = useZoomPan(containerRef, drawingTool)
 
   const onDividerMouseDown = useCallback((e) => {
     e.stopPropagation()
@@ -51,7 +54,16 @@ export default function SideBySideView() {
           Old Rev
         </div>
         <div style={{ transform, willChange: 'transform' }}>
-          {oldPDF && <PDFCanvas doc={oldPDF.doc} pageNum={Math.min(currentPage, oldPDF.pageCount)} scale={zoom} />}
+          {oldPDF && (
+            <PDFCanvas
+              doc={oldPDF.doc}
+              pageNum={Math.min(currentPage, oldPDF.pageCount)}
+              scale={zoom}
+              canvasRef={oldCanvasRef}
+            >
+              <DrawingCanvas canvasRef={oldCanvasRef} zoom={zoom} pageNum={currentPage} />
+            </PDFCanvas>
+          )}
         </div>
       </div>
 
@@ -73,7 +85,16 @@ export default function SideBySideView() {
           New Rev
         </div>
         <div style={{ transform, willChange: 'transform' }}>
-          {newPDF && <PDFCanvas doc={newPDF.doc} pageNum={Math.min(currentPage, newPDF.pageCount)} scale={zoom} />}
+          {newPDF && (
+            <PDFCanvas
+              doc={newPDF.doc}
+              pageNum={Math.min(currentPage, newPDF.pageCount)}
+              scale={zoom}
+              canvasRef={newCanvasRef}
+            >
+              <DrawingCanvas canvasRef={newCanvasRef} zoom={zoom} pageNum={currentPage} />
+            </PDFCanvas>
+          )}
         </div>
       </div>
     </div>

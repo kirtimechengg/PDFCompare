@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 import usePDFStore from '../../../store/usePDFStore'
 import { usePDFRenderer } from '../../../hooks/usePDFRenderer'
 import { useZoomPan } from '../../../hooks/useZoomPan'
+import DrawingCanvas from '../../drawing/DrawingCanvas'
 
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -34,12 +35,12 @@ export default function OverlayCanvas() {
     oldColor, newColor, oldOpacity, newOpacity,
     blendMode, showOld, showNew,
     alignOffsetX, alignOffsetY, alignRotation,
-    panX, panY,
+    panX, panY, drawingTool,
   } = usePDFStore()
 
   const containerRef = useRef(null)
   const canvasRef = useRef(null)
-  const { onMouseDown, onMouseMove, onMouseUp } = useZoomPan(containerRef)
+  const { onMouseDown, onMouseMove, onMouseUp } = useZoomPan(containerRef, drawingTool)
   const [rendering, setRendering] = useState(false)
   const renderIdRef = useRef(0)
 
@@ -109,11 +110,12 @@ export default function OverlayCanvas() {
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
     >
-      <div style={{ transform, willChange: 'transform' }}>
+      <div style={{ transform, willChange: 'transform', position: 'relative' }}>
         <canvas
           ref={canvasRef}
           style={{ display: 'block', imageRendering: 'pixelated' }}
         />
+        <DrawingCanvas canvasRef={canvasRef} zoom={zoom} pageNum={currentPage} />
       </div>
       {rendering && (
         <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-gray-400 bg-black/40 px-3 py-1.5 rounded-full">

@@ -39,6 +39,13 @@ const usePDFStore = create((set, get) => ({
   sidebarOpen: true,
   syncScroll: true,
 
+  // --- Drawing tools ---
+  drawingTool: null,         // null | 'select' | 'rect' | 'circle' | 'line' | 'arrow' | 'pen' | 'marker'
+  drawColor: '#ff3b30',
+  drawStrokeWidth: 2,
+  annotations: {},           // { [pageNum]: Shape[] }
+  selectedAnnotationId: null,
+
   // --- Password prompts ---
   pendingPasswordPDF: null,  // 'old' | 'new' | null
 
@@ -82,6 +89,41 @@ const usePDFStore = create((set, get) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSyncScroll: (v) => set({ syncScroll: v }),
   setPendingPasswordPDF: (which) => set({ pendingPasswordPDF: which }),
+
+  setDrawingTool: (t) => set({ drawingTool: t }),
+  setDrawColor: (c) => set({ drawColor: c }),
+  setDrawStrokeWidth: (w) => set({ drawStrokeWidth: w }),
+  addAnnotation: (shape) => set((s) => ({
+    annotations: {
+      ...s.annotations,
+      [shape.page]: [...(s.annotations[shape.page] ?? []), shape],
+    },
+  })),
+  removeAnnotation: (page, id) => set((s) => ({
+    annotations: {
+      ...s.annotations,
+      [page]: (s.annotations[page] ?? []).filter((a) => a.id !== id),
+    },
+  })),
+  undoAnnotation: (page) => set((s) => ({
+    annotations: {
+      ...s.annotations,
+      [page]: (s.annotations[page] ?? []).slice(0, -1),
+    },
+  })),
+  clearPageAnnotations: (page) => set((s) => ({
+    annotations: { ...s.annotations, [page]: [] },
+  })),
+
+  setSelectedAnnotationId: (id) => set({ selectedAnnotationId: id }),
+  deleteSelectedAnnotation: () => set((s) => {
+    if (!s.selectedAnnotationId) return {}
+    const newAnnotations = {}
+    for (const [page, shapes] of Object.entries(s.annotations)) {
+      newAnnotations[page] = shapes.filter((a) => a.id !== s.selectedAnnotationId)
+    }
+    return { annotations: newAnnotations, selectedAnnotationId: null }
+  }),
 }))
 
 export default usePDFStore

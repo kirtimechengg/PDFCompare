@@ -3,6 +3,7 @@ import PageNavigation from './PageNavigation'
 import ZoomControls from './ZoomControls'
 import ThemeToggle from '../common/ThemeToggle'
 import ExportButton from '../common/ExportButton'
+import DrawingToolbar from '../drawing/DrawingToolbar'
 
 const MODES = [
   { id: 'overlay', label: 'Overlay' },
@@ -68,6 +69,11 @@ export default function Toolbar({ canvasRef }) {
           </button>
         ))}
       </div>
+
+      <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+
+      {/* Drawing tools */}
+      <DrawingToolbar />
 
       <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
 

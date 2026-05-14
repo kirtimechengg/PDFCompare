@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 import usePDFStore from '../store/usePDFStore'
 
-export function useZoomPan(containerRef) {
+export function useZoomPan(containerRef, drawingTool) {
   const dragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 })
 
@@ -23,6 +23,7 @@ export function useZoomPan(containerRef) {
 
   const onMouseDown = useCallback((e) => {
     if (e.button !== 0) return
+    if (drawingTool) return
     const { panX, panY } = usePDFStore.getState()
     dragging.current = true
     dragStart.current = { x: e.clientX, y: e.clientY, panX, panY }

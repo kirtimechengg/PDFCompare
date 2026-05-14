@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import usePDFStore from '../../../store/usePDFStore'
 import { useZoomPan } from '../../../hooks/useZoomPan'
 import { usePDFRenderer } from '../../../hooks/usePDFRenderer'
+import DrawingCanvas from '../../drawing/DrawingCanvas'
 
 function SwipeHandle({ pct, top }) {
   return (
@@ -36,10 +37,10 @@ function SwipeHandle({ pct, top }) {
 }
 
 export default function SwipeView() {
-  const { oldPDF, newPDF, currentPage, zoom, panX, panY } = usePDFStore()
+  const { oldPDF, newPDF, currentPage, zoom, panX, panY, drawingTool } = usePDFStore()
   const containerRef = useRef(null)
   const canvasRef = useRef(null)
-  const { onMouseDown: onPanDown, onMouseMove: onPanMove, onMouseUp: onPanUp } = useZoomPan(containerRef)
+  const { onMouseDown: onPanDown, onMouseMove: onPanMove, onMouseUp: onPanUp } = useZoomPan(containerRef, drawingTool)
   const { renderPageOffscreen } = usePDFRenderer()
   const [revealX, setRevealX] = useState(null)
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 })
@@ -117,6 +118,7 @@ export default function SwipeView() {
     >
       <div style={{ transform, willChange: 'transform', position: 'relative' }}>
         <canvas ref={canvasRef} style={{ display: 'block' }} />
+        <DrawingCanvas canvasRef={canvasRef} zoom={zoom} pageNum={currentPage} />
 
         {/* Overlay: vertical divider line + 3 synced handles */}
         <div
@@ -125,6 +127,7 @@ export default function SwipeView() {
             inset: 0,
             pointerEvents: 'none',
             overflow: 'hidden',
+            zIndex: 20,
           }}
         >
           {/* Vertical line */}

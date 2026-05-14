@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
 import { usePDFRenderer } from '../../../hooks/usePDFRenderer'
 
-export default function PDFCanvas({ doc, pageNum, scale, style, className }) {
-  const canvasRef = useRef(null)
+export default function PDFCanvas({ doc, pageNum, scale, style, className, canvasRef: externalRef, children }) {
+  const internalRef = useRef(null)
+  const canvasRef = externalRef ?? internalRef
   const { renderPage } = usePDFRenderer()
   const [rendering, setRendering] = useState(false)
 
@@ -26,6 +27,7 @@ export default function PDFCanvas({ doc, pageNum, scale, style, className }) {
           <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         </div>
       )}
+      {children}
     </div>
   )
 }
