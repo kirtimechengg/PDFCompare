@@ -103,6 +103,60 @@ function PenShape({ shape }) {
   )
 }
 
+function TextBoxShape({ shape }) {
+  const { x1, y1, x2, y2, color, strokeWidth, text, fontSize } = shape
+  const bx = Math.min(x1, x2), by = Math.min(y1, y2)
+  const bw = Math.abs(x2 - x1), bh = Math.abs(y2 - y1)
+  const fs = fontSize ?? 14
+  const pad = fs * 0.4
+  const lines = (text || '').split('\n')
+  return (
+    <g pointerEvents="none">
+      <rect x={bx} y={by} width={bw} height={bh}
+        fill="rgba(255,255,255,0.93)" stroke={color} strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+      />
+      {lines.map((line, i) => (
+        <text key={i} x={bx + pad} y={by + pad + fs * (i + 0.85)}
+          fontSize={fs} fill={color} fontFamily="sans-serif"
+        >{line}</text>
+      ))}
+    </g>
+  )
+}
+
+function CalloutShape({ shape }) {
+  const { x1, y1, x2, y2, color, strokeWidth, text, fontSize } = shape
+  const bx = Math.min(x1, x2), by = Math.min(y1, y2)
+  const bw = Math.abs(x2 - x1), bh = Math.abs(y2 - y1)
+  const fs = fontSize ?? 14
+  const pad = fs * 0.4
+  const lines = (text || '').split('\n')
+  // Tail tip — stored or auto-derived below the left corner
+  const tx = shape.tx ?? (bx - bh * 0.3)
+  const ty = shape.ty ?? (by + bh + bh * 0.5)
+  // Tail base: two points along the bottom edge near the left
+  const bp1x = bx + bw * 0.1, bp2x = bx + bw * 0.26, bpy = by + bh
+  return (
+    <g pointerEvents="none">
+      <polygon
+        points={`${bp1x},${bpy} ${tx},${ty} ${bp2x},${bpy}`}
+        fill="rgba(255,255,255,0.93)" stroke={color} strokeWidth={strokeWidth * 0.8}
+        strokeLinejoin="round"
+      />
+      <rect x={bx} y={by} width={bw} height={bh}
+        fill="rgba(255,255,255,0.93)" stroke={color} strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+      />
+      {lines.map((line, i) => (
+        <text key={i} x={bx + pad} y={by + pad + fs * (i + 0.85)}
+          fontSize={fs} fill={color} fontFamily="sans-serif"
+        >{line}</text>
+      ))}
+    </g>
+  )
+}
+
 // --- Hit areas for selection (invisible, wide for easy clicking) ---
 
 function HitArea({ shape, onSelect }) {
@@ -136,6 +190,17 @@ function HitArea({ shape, onSelect }) {
       <line x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2}
         stroke="transparent" strokeWidth={hw} strokeLinecap="round"
         cursor="pointer" pointerEvents="stroke" onClick={sel}
+      />
+    )
+  }
+  if (shape.type === 'textbox' || shape.type === 'callout') {
+    const { x1, y1, x2, y2 } = shape
+    return (
+      <rect
+        x={Math.min(x1, x2)} y={Math.min(y1, y2)}
+        width={Math.abs(x2 - x1)} height={Math.abs(y2 - y1)}
+        fill="transparent" stroke="transparent" strokeWidth={hw}
+        cursor="pointer" pointerEvents="all" onClick={sel}
       />
     )
   }
@@ -207,6 +272,8 @@ function ShapeEl({ shape, isPreview, isSelected, selectMode, onSelect, onDelete,
     if (shape.type === 'line')   return <LineShape shape={shape} />
     if (shape.type === 'arrow')  return <ArrowShape shape={shape} />
     if (shape.type === 'pen' || shape.type === 'marker') return <PenShape shape={shape} />
+    if (shape.type === 'textbox') return <TextBoxShape shape={shape} />
+    if (shape.type === 'callout') return <CalloutShape shape={shape} />
     return null
   })()
 
@@ -216,6 +283,62 @@ function ShapeEl({ shape, isPreview, isSelected, selectMode, onSelect, onDelete,
       {selectMode && !isPreview && <HitArea shape={shape} onSelect={onSelect} />}
       {isSelected && !isPreview && <SelectionBox shape={shape} onDelete={onDelete} zoom={zoom} />}
     </g>
+  )
+}
+
+// --- Inline text editor overlay ---
+
+function TextEditor({ shape, canvasRef, zoom, onCommit, onCancel }) {
+  const [text, setText] = useState('')
+  const taRef = useRef(null)
+  useEffect(() => { taRef.current?.focus() }, [])
+
+  const canvas = canvasRef?.current
+  if (!canvas) return null
+  const rect = canvas.getBoundingClientRect()
+
+  const bx = Math.min(shape.x1, shape.x2)
+  const by = Math.min(shape.y1, shape.y2)
+  const bw = Math.abs(shape.x2 - shape.x1)
+  const bh = Math.abs(shape.y2 - shape.y1)
+  const fs = (shape.fontSize ?? 14) * zoom
+  const pad = fs * 0.4
+  const sw = (shape.strokeWidth ?? 2) * zoom
+
+  const commit = () => { if (text.trim()) onCommit(text); else onCancel() }
+
+  return (
+    <textarea
+      ref={taRef}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        e.stopPropagation()
+        if (e.key === 'Escape') { e.preventDefault(); onCancel() }
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit() }
+      }}
+      placeholder="Type here…"
+      style={{
+        position: 'fixed',
+        left: rect.left + bx * zoom,
+        top: rect.top + by * zoom,
+        width: bw * zoom,
+        height: bh * zoom,
+        fontSize: `${fs}px`,
+        fontFamily: 'sans-serif',
+        color: shape.color,
+        background: 'rgba(255,255,255,0.97)',
+        border: `${sw}px solid ${shape.color}`,
+        borderRadius: 2,
+        padding: `${pad}px`,
+        resize: 'none',
+        outline: 'none',
+        zIndex: 50,
+        boxSizing: 'border-box',
+        lineHeight: 1.4,
+      }}
+    />
   )
 }
 
@@ -230,11 +353,13 @@ export default function DrawingCanvas({ canvasRef, zoom, pageNum }) {
 
   const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 })
   const [preview, setPreview] = useState(null)
+  const [editingShape, setEditingShape] = useState(null)
   const drawStart = useRef(null)
   const penPoints = useRef([])
 
   const isPen = drawingTool === 'pen' || drawingTool === 'marker'
   const isSelect = drawingTool === 'select'
+  const isText = drawingTool === 'textbox' || drawingTool === 'callout'
 
   // Sync SVG size to canvas element
   useEffect(() => {
@@ -322,10 +447,25 @@ export default function DrawingCanvas({ canvasRef, zoom, pageNum }) {
     }
     const isValid = shape.points ? shape.points.length > 1
       : (Math.abs(shape.x2 - shape.x1) > 1 || Math.abs(shape.y2 - shape.y1) > 1)
-    if (isValid) addAnnotation(shape)
+
+    if (isValid && isText) {
+      // Normalise and enforce a minimum usable size
+      const bx = Math.min(shape.x1, shape.x2)
+      const by = Math.min(shape.y1, shape.y2)
+      const bw = Math.max(Math.abs(shape.x2 - shape.x1), 80)
+      const bh = Math.max(Math.abs(shape.y2 - shape.y1), 40)
+      const s = { ...shape, x1: bx, y1: by, x2: bx + bw, y2: by + bh, fontSize: 14 }
+      if (s.type === 'callout') {
+        s.tx = bx - bh * 0.35
+        s.ty = by + bh + bh * 0.55
+      }
+      setEditingShape(s)
+    } else if (isValid) {
+      addAnnotation(shape)
+    }
     drawStart.current = null
     setPreview(null)
-  }, [preview, isPen, toPage, pageNum, addAnnotation])
+  }, [preview, isPen, isText, toPage, pageNum, addAnnotation])
 
   const onBgClick = useCallback(() => {
     if (isSelect) setSelectedAnnotationId(null)
@@ -342,35 +482,47 @@ export default function DrawingCanvas({ canvasRef, zoom, pageNum }) {
   const pageW = canvasSize.w / zoom
   const pageH = canvasSize.h / zoom
   const shapes = annotations[pageNum] ?? []
-  const isActive = !!drawingTool
+  const isActive = !!drawingTool && !editingShape
   const cursor = isSelect ? 'default' : drawingTool ? 'crosshair' : 'default'
 
   return (
-    <svg
-      style={{
-        position: 'absolute', top: 0, left: 0,
-        width: canvasSize.w, height: canvasSize.h,
-        cursor, pointerEvents: isActive ? 'all' : 'none',
-        zIndex: 10, userSelect: 'none',
-      }}
-      viewBox={`0 0 ${pageW} ${pageH}`}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={finalize}
-      onMouseLeave={finalize}
-      onClick={onBgClick}
-    >
-      {shapes.map((s) => (
-        <ShapeEl
-          key={s.id} shape={s}
-          isSelected={selectedAnnotationId === s.id}
-          selectMode={isSelect}
-          onSelect={setSelectedAnnotationId}
-          onDelete={onDelete}
+    <>
+      <svg
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          width: canvasSize.w, height: canvasSize.h,
+          cursor, pointerEvents: isActive ? 'all' : 'none',
+          zIndex: 10, userSelect: 'none',
+        }}
+        viewBox={`0 0 ${pageW} ${pageH}`}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={finalize}
+        onMouseLeave={finalize}
+        onClick={onBgClick}
+      >
+        {shapes.map((s) => (
+          <ShapeEl
+            key={s.id} shape={s}
+            isSelected={selectedAnnotationId === s.id}
+            selectMode={isSelect}
+            onSelect={setSelectedAnnotationId}
+            onDelete={onDelete}
+            zoom={zoom}
+          />
+        ))}
+        {preview && <ShapeEl shape={preview} isPreview zoom={zoom} />}
+        {editingShape && <ShapeEl shape={editingShape} isPreview zoom={zoom} />}
+      </svg>
+      {editingShape && (
+        <TextEditor
+          shape={editingShape}
+          canvasRef={canvasRef}
           zoom={zoom}
+          onCommit={(text) => { addAnnotation({ ...editingShape, text }); setEditingShape(null) }}
+          onCancel={() => setEditingShape(null)}
         />
-      ))}
-      {preview && <ShapeEl shape={preview} isPreview zoom={zoom} />}
-    </svg>
+      )}
+    </>
   )
 }

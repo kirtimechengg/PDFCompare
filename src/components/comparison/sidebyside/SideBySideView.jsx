@@ -3,6 +3,7 @@ import usePDFStore from '../../../store/usePDFStore'
 import PDFCanvas from '../shared/PDFCanvas'
 import { useZoomPan } from '../../../hooks/useZoomPan'
 import DrawingCanvas from '../../drawing/DrawingCanvas'
+import PDFAnnotationOverlay from '../shared/PDFAnnotationOverlay'
 
 export default function SideBySideView() {
   const { oldPDF, newPDF, currentPage, zoom, panX, panY, drawingTool } = usePDFStore()
@@ -62,6 +63,7 @@ export default function SideBySideView() {
               canvasRef={oldCanvasRef}
             >
               <DrawingCanvas canvasRef={oldCanvasRef} zoom={zoom} pageNum={currentPage} />
+              <PDFAnnotationOverlay doc={oldPDF.doc} pageNum={Math.min(currentPage, oldPDF.pageCount)} zoom={zoom} canvasRef={oldCanvasRef} label="Old" />
             </PDFCanvas>
           )}
         </div>
@@ -93,6 +95,7 @@ export default function SideBySideView() {
               canvasRef={newCanvasRef}
             >
               <DrawingCanvas canvasRef={newCanvasRef} zoom={zoom} pageNum={currentPage} />
+              <PDFAnnotationOverlay doc={newPDF.doc} pageNum={Math.min(currentPage, newPDF.pageCount)} zoom={zoom} canvasRef={newCanvasRef} label="New" />
             </PDFCanvas>
           )}
         </div>

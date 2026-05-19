@@ -69,6 +69,28 @@ function MarkerIcon() {
   )
 }
 
+function TextBoxIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="11" height="9" rx="0.5" />
+      <line x1="4" y1="6.5" x2="11" y2="6.5" />
+      <line x1="4" y1="9" x2="8.5" y2="9" />
+      <line x1="4" y1="4.5" x2="5.2" y2="4.5" strokeWidth="2" />
+    </svg>
+  )
+}
+
+function CalloutIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1.5" y="2" width="10" height="7" rx="0.5" />
+      <polyline points="3.5,9 2,13 6.5,10.5" />
+      <line x1="3.5" y1="5" x2="9.5" y2="5" />
+      <line x1="3.5" y1="7" x2="7.5" y2="7" />
+    </svg>
+  )
+}
+
 function UndoIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -94,6 +116,11 @@ const SHAPE_TOOLS = [
 const FREEHAND_TOOLS = [
   { id: 'pen',    label: 'Pen',       icon: <PenIcon /> },
   { id: 'marker', label: 'Marker',    icon: <MarkerIcon /> },
+]
+
+const TEXT_TOOLS = [
+  { id: 'textbox',  label: 'Text Box', icon: <TextBoxIcon /> },
+  { id: 'callout',  label: 'Callout',  icon: <CalloutIcon /> },
 ]
 
 const STROKE_WIDTHS = [
@@ -151,6 +178,11 @@ export default function DrawingToolbar() {
 
       {/* Freehand */}
       <ToolGroup tools={FREEHAND_TOOLS} active={drawingTool} onSelect={setDrawingTool} />
+
+      <div className="w-px h-5 bg-gray-300 dark:bg-gray-600" />
+
+      {/* Text annotations */}
+      <ToolGroup tools={TEXT_TOOLS} active={drawingTool} onSelect={setDrawingTool} />
 
       {/* Color + stroke + actions — show when a draw/freehand tool is active */}
       {showDrawOptions && (

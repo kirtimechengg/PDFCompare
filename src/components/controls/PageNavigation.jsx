@@ -20,13 +20,13 @@ export default function PageNavigation() {
       <button
         onClick={() => setCurrentPage(1)}
         disabled={currentPage <= 1}
-        className="px-1.5 py-1 rounded hover:bg-white/10 disabled:opacity-30"
+        className="px-2 py-1 rounded hover:bg-white/10 disabled:opacity-30 text-2xl leading-none"
         title="First page"
       >⟨⟨</button>
       <button
         onClick={() => setCurrentPage(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="px-1.5 py-1 rounded hover:bg-white/10 disabled:opacity-30"
+        className="px-2 py-1 rounded hover:bg-white/10 disabled:opacity-30 text-2xl leading-none"
         title="Previous page"
       >‹</button>
 
@@ -54,13 +54,13 @@ export default function PageNavigation() {
       <button
         onClick={() => setCurrentPage(currentPage + 1)}
         disabled={currentPage >= maxPage}
-        className="px-1.5 py-1 rounded hover:bg-white/10 disabled:opacity-30"
+        className="px-2 py-1 rounded hover:bg-white/10 disabled:opacity-30 text-2xl leading-none"
         title="Next page"
       >›</button>
       <button
         onClick={() => setCurrentPage(maxPage)}
         disabled={currentPage >= maxPage}
-        className="px-1.5 py-1 rounded hover:bg-white/10 disabled:opacity-30"
+        className="px-2 py-1 rounded hover:bg-white/10 disabled:opacity-30 text-2xl leading-none"
         title="Last page"
       >⟩⟩</button>
     </div>

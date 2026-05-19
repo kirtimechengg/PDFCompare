@@ -3,6 +3,7 @@ import usePDFStore from '../../../store/usePDFStore'
 import { useZoomPan } from '../../../hooks/useZoomPan'
 import { usePDFRenderer } from '../../../hooks/usePDFRenderer'
 import DrawingCanvas from '../../drawing/DrawingCanvas'
+import PDFAnnotationOverlay from '../shared/PDFAnnotationOverlay'
 
 function SwipeHandle({ pct, top }) {
   return (
@@ -119,6 +120,8 @@ export default function SwipeView() {
       <div style={{ transform, willChange: 'transform', position: 'relative' }}>
         <canvas ref={canvasRef} style={{ display: 'block' }} />
         <DrawingCanvas canvasRef={canvasRef} zoom={zoom} pageNum={currentPage} />
+        {oldPDF?.doc && <PDFAnnotationOverlay doc={oldPDF.doc} pageNum={Math.min(currentPage, oldPDF.pageCount)} zoom={zoom} canvasRef={canvasRef} label="Old" />}
+        {newPDF?.doc && <PDFAnnotationOverlay doc={newPDF.doc} pageNum={Math.min(currentPage, newPDF.pageCount)} zoom={zoom} canvasRef={canvasRef} label="New" />}
 
         {/* Overlay: vertical divider line + 3 synced handles */}
         <div

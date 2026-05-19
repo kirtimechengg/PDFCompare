@@ -3,6 +3,7 @@ import usePDFStore from '../../../store/usePDFStore'
 import { usePDFRenderer } from '../../../hooks/usePDFRenderer'
 import { useZoomPan } from '../../../hooks/useZoomPan'
 import DrawingCanvas from '../../drawing/DrawingCanvas'
+import PDFAnnotationOverlay from '../shared/PDFAnnotationOverlay'
 
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -116,6 +117,8 @@ export default function OverlayCanvas() {
           style={{ display: 'block', imageRendering: 'pixelated' }}
         />
         <DrawingCanvas canvasRef={canvasRef} zoom={zoom} pageNum={currentPage} />
+        {oldPDF?.doc && <PDFAnnotationOverlay doc={oldPDF.doc} pageNum={currentPage} zoom={zoom} canvasRef={canvasRef} label="Old" />}
+        {newPDF?.doc && <PDFAnnotationOverlay doc={newPDF.doc} pageNum={currentPage} zoom={zoom} canvasRef={canvasRef} label="New" />}
       </div>
       {rendering && (
         <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-gray-400 bg-black/40 px-3 py-1.5 rounded-full">
