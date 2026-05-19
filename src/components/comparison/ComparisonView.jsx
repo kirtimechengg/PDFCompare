@@ -7,6 +7,7 @@ import MiniMap from '../controls/MiniMap'
 import OverlayCanvas from './overlay/OverlayCanvas'
 import SideBySideView from './sidebyside/SideBySideView'
 import SwipeView from './sidebyside/SwipeView'
+import ContinuousView from './continuous/ContinuousView'
 
 export default function ComparisonView() {
   const { mode, oldPDF, newPDF } = usePDFStore()
@@ -30,6 +31,7 @@ export default function ComparisonView() {
           {mode === 'overlay' && <OverlayCanvas />}
           {mode === 'sidebyside' && <SideBySideView />}
           {mode === 'swipe' && <SwipeView />}
+          {mode === 'continuous' && <ContinuousView />}
           <MiniMap />
         </div>
 

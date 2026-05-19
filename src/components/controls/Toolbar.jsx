@@ -9,6 +9,7 @@ const MODES = [
   { id: 'overlay', label: 'Overlay' },
   { id: 'sidebyside', label: 'Side-by-Side' },
   { id: 'swipe', label: 'Swipe' },
+  { id: 'continuous', label: 'Continuous' },
 ]
 
 export default function Toolbar({ canvasRef }) {
